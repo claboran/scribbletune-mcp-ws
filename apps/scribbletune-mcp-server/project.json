@@ -67,6 +67,12 @@
       "options": {
         "passWithNoTests": true
       }
+    },
+    "inspect": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "npx @modelcontextprotocol/inspector http://localhost:3000/mcp"
+      }
     }
   }
 }

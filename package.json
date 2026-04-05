@@ -2,7 +2,11 @@
   "name": "@scribbletune-mcp-ws/source",
   "version": "0.0.0",
   "license": "MIT",
-  "scripts": {},
+  "scripts": {
+    "mcp:dev": "nx run scribbletune-mcp-server:serve:development",
+    "mcp:build": "nx run scribbletune-mcp-server:build",
+    "mcp:inspect": "nx run scribbletune-mcp-server:inspect"
+  },
   "private": true,
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.29.0",
@@ -10,9 +14,10 @@
     "@nestjs/core": "^11.0.0",
     "@nestjs/platform-express": "^11.0.0",
     "@rekog/mcp-nest": "^1.9.9",
-    "axios": "^1.6.0",
+    "axios": "1.13.5",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.0",
+    "scribbletune": "^5.5.4",
     "zod": "^4.3.6"
   },
   "devDependencies": {

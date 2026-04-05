@@ -66,7 +66,7 @@ User downloads .mid → imports into DAW
 ### Install
 
 ```bash
-git clone https://github.com/your-org/scribbletune-mcp-ws.git
+git clone https://github.com/claboran/scribbletune-mcp-ws.git
 cd scribbletune-mcp-ws
 npm install
 ```

@@ -1,10 +1,10 @@
 module.exports = {
-  displayName: 'scribbletune-mcp-ws',
+  displayName: 'scribbletune-mcp-server',
   preset: '../../jest.preset.js',
   testEnvironment: 'node',
   transform: {
     '^.+\\.[tj]s$': ['ts-jest', { tsconfig: '<rootDir>/tsconfig.spec.json' }],
   },
   moduleFileExtensions: ['ts', 'js', 'html'],
-  coverageDirectory: '../../coverage/apps/scribbletune-mcp-ws',
+  coverageDirectory: '../../coverage/apps/scribbletune-mcp-server',
 };

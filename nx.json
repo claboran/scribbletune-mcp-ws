@@ -39,7 +39,7 @@
       "options": {
         "targetName": "test"
       },
-      "exclude": ["apps/scribbletune-mcp-ws-e2e/**/*"]
+      "exclude": []
     }
   ]
 }

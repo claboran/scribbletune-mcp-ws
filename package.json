@@ -5,12 +5,15 @@
   "scripts": {},
   "private": true,
   "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.29.0",
     "@nestjs/common": "^11.0.0",
     "@nestjs/core": "^11.0.0",
     "@nestjs/platform-express": "^11.0.0",
+    "@rekog/mcp-nest": "^1.9.9",
     "axios": "^1.6.0",
-    "reflect-metadata": "^0.1.13",
-    "rxjs": "^7.8.0"
+    "reflect-metadata": "^0.2.2",
+    "rxjs": "^7.8.0",
+    "zod": "^4.3.6"
   },
   "devDependencies": {
     "@eslint/js": "^9.8.0",
@@ -20,7 +23,7 @@
     "@nx/eslint-plugin": "22.6.4",
     "@nx/jest": "22.6.4",
     "@nx/js": "22.6.4",
-    "@nx/nest": "22.6.4",
+    "@nx/nest": "^22.6.4",
     "@nx/node": "22.6.4",
     "@nx/web": "22.6.4",
     "@nx/webpack": "22.6.4",

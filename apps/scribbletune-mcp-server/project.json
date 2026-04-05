@@ -1,7 +1,7 @@
 {
-  "name": "scribbletune-mcp-ws",
+  "name": "scribbletune-mcp-server",
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
-  "sourceRoot": "apps/scribbletune-mcp-ws/src",
+  "sourceRoot": "apps/scribbletune-mcp-server/src",
   "projectType": "application",
   "tags": [],
   "targets": {
@@ -10,7 +10,7 @@
       "options": {
         "command": "webpack-cli build",
         "args": ["--node-env=production"],
-        "cwd": "apps/scribbletune-mcp-ws"
+        "cwd": "apps/scribbletune-mcp-server"
       },
       "configurations": {
         "development": {
@@ -23,8 +23,8 @@
       "cache": true,
       "executor": "@nx/js:prune-lockfile",
       "outputs": [
-        "{workspaceRoot}/dist/apps/scribbletune-mcp-ws/package.json",
-        "{workspaceRoot}/dist/apps/scribbletune-mcp-ws/package-lock.json"
+        "{workspaceRoot}/dist/apps/scribbletune-mcp-server/package.json",
+        "{workspaceRoot}/dist/apps/scribbletune-mcp-server/package-lock.json"
       ],
       "options": {
         "buildTarget": "build"
@@ -34,7 +34,7 @@
       "dependsOn": ["build"],
       "cache": true,
       "outputs": [
-        "{workspaceRoot}/dist/apps/scribbletune-mcp-ws/workspace_modules"
+        "{workspaceRoot}/dist/apps/scribbletune-mcp-server/workspace_modules"
       ],
       "executor": "@nx/js:copy-workspace-modules",
       "options": {
@@ -51,15 +51,15 @@
       "defaultConfiguration": "development",
       "dependsOn": ["build"],
       "options": {
-        "buildTarget": "scribbletune-mcp-ws:build",
+        "buildTarget": "scribbletune-mcp-server:build",
         "runBuildTargetDependencies": false
       },
       "configurations": {
         "development": {
-          "buildTarget": "scribbletune-mcp-ws:build:development"
+          "buildTarget": "scribbletune-mcp-server:build:development"
         },
         "production": {
-          "buildTarget": "scribbletune-mcp-ws:build:production"
+          "buildTarget": "scribbletune-mcp-server:build:production"
         }
       }
     },

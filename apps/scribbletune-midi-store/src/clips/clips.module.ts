@@ -3,7 +3,6 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import Redis from 'ioredis';
 import { ClipsController } from './clips.controller';
 import { ClipsService, REDIS_CLIENT } from './clips.service';
-import { redisConfig } from '../config/redis.config';
 
 @Module({
   imports: [ConfigModule],

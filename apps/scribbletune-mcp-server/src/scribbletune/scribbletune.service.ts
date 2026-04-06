@@ -5,7 +5,7 @@ import type { ClipParams } from './scribbletune.types';
 
 @Injectable()
 export class ScribbletunService {
-  private readonly logger = new Logger(ScribbletunService.name);
+  readonly #logger = new Logger(ScribbletunService.name);
 
   generateBuffer(params: ClipParams): { buffer: Buffer; eventCount: number } {
     const notes = this.resolveNotes(params);
@@ -25,7 +25,7 @@ export class ScribbletunService {
     const bytes = midi(noteEvents, null, params.bpm) as string;
     const buffer = Buffer.from(bytes, 'binary');
 
-    this.logger.debug(`Generated ${noteEvents.length} events, ${buffer.length} bytes`);
+    this.#logger.debug(`Generated ${noteEvents.length} events, ${buffer.length} bytes`);
     return { buffer, eventCount: noteEvents.length };
   }
 

@@ -44,3 +44,4 @@ Thumbs.db
 .claude/settings.local.json
 
 .nx/polygraph
+open-api-generator-cli/*.jar

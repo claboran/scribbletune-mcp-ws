@@ -5,19 +5,32 @@
   "scripts": {
     "mcp:dev": "nx run scribbletune-mcp-server:serve:development",
     "mcp:build": "nx run scribbletune-mcp-server:build",
-    "mcp:inspect": "nx run scribbletune-mcp-server:inspect"
+    "mcp:inspect": "nx run scribbletune-mcp-server:inspect",
+    "store:dev": "nx run scribbletune-midi-store:serve:development",
+    "store:build": "nx run scribbletune-midi-store:build",
+    "dev": "nx run-many --target=serve --projects=scribbletune-mcp-server,scribbletune-midi-store",
+    "valkey:up": "docker compose up -d",
+    "valkey:down": "docker compose down",
+    "store:generate:client": "java -jar open-api-generator-cli/openapi-generator-cli.jar generate -i apps/scribbletune-mcp-server/open-api/scribbletune-open-api.yml -g typescript-fetch -o apps/scribbletune-mcp-server/src/midi-store-client --additional-properties=supportsES6=true,typescriptThreePlus=true,npmVersion=1.0.0,withInterfaces=true"
   },
   "private": true,
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.29.0",
+    "@nestjs/axios": "^4.0.1",
     "@nestjs/common": "^11.0.0",
+    "@nestjs/config": "^4.0.3",
     "@nestjs/core": "^11.0.0",
     "@nestjs/platform-express": "^11.0.0",
+    "@nestjs/swagger": "^11.2.6",
     "@rekog/mcp-nest": "^1.9.9",
     "axios": "1.13.5",
+    "ioredis": "^5.10.1",
+    "multer": "^2.1.1",
+    "nestjs-zod": "^5.3.0",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.0",
     "scribbletune": "^5.5.4",
+    "uuid": "^13.0.0",
     "zod": "^4.3.6"
   },
   "devDependencies": {
@@ -37,7 +50,9 @@
     "@swc/core": "~1.15.5",
     "@swc/helpers": "~0.5.18",
     "@types/jest": "^30.0.0",
+    "@types/multer": "^2.1.0",
     "@types/node": "20.19.9",
+    "@types/uuid": "^10.0.0",
     "eslint": "^9.8.0",
     "eslint-config-prettier": "^10.0.0",
     "jest": "^30.0.2",

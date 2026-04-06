@@ -1,0 +1,9 @@
+.openapi-generator-ignore
+apis/ClipsApi.ts
+apis/index.ts
+docs/ClipsApi.md
+docs/SaveClipResponseDto.md
+index.ts
+models/SaveClipResponseDto.ts
+models/index.ts
+runtime.ts

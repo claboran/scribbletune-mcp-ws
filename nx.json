@@ -39,7 +39,10 @@
       "options": {
         "targetName": "test"
       },
-      "exclude": []
+      "exclude": [
+        "apps/kv-server-e2e/**/*",
+        "apps/scribbletune-midi-store-e2e/**/*"
+      ]
     }
   ]
 }

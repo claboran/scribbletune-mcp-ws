@@ -1,4 +1,4 @@
-export interface ClipParams {
+export type ClipParams =  {
   command: 'riff' | 'chord' | 'arp';
   root: string;
   mode: string;
@@ -14,4 +14,4 @@ export interface ClipParams {
   // arp-only
   arpCount?: number;
   arpOrder?: string;
-}
+};

@@ -192,7 +192,7 @@ The `scribbletune-midi-store` exposes a full OpenAPI 3 spec via its Swagger UI (
 
 ```bash
 mkdir -p open-api-generator-cli
-curl -L https://repo1.maven.org/maven2/org/openapitools/openapi-generator-cli/7.12.0/openapi-generator-cli-7.12.0.jar \
+curl -L https://repo1.maven.org/maven2/org/openapitools/openapi-generator-cli/7.19.0/openapi-generator-cli-7.19.0.jar \
      -o open-api-generator-cli/openapi-generator-cli.jar
 ```
 
@@ -244,7 +244,7 @@ docker-compose.yml           # Valkey 8 for local development
 
 - [x] `scribbletune-midi-store` — Valkey-backed MIDI storage with HTTP download endpoint and Swagger UI
 - [x] Docker Compose setup for full local stack
-- [ ] Wire generated OpenAPI client into `scribbletune-mcp-server` (replace handcrafted `MidiStoreClient`)
+- [x] Wire generated OpenAPI client into `scribbletune-mcp-server` (replace handcrafted `MidiStoreClient`)
 - [ ] Multi-clip session tool — generate bass, chords, and melody in a single call
 - [ ] Example agent system prompts and Claude Desktop configuration
 

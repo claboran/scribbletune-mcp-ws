@@ -1,21 +1,18 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule, ConfigService } from '@nestjs/config';
-import Redis from 'ioredis';
+import { ConfigModule } from '@nestjs/config';
 import { ClipsController } from './clips.controller';
 import { ClipsService, REDIS_CLIENT } from './clips.service';
-import { redisConfig } from '../config/redis.config';
+import { RedisProvider } from './redis.provider';
 
 @Module({
   imports: [ConfigModule],
   controllers: [ClipsController],
   providers: [
+    RedisProvider,
     {
       provide: REDIS_CLIENT,
-      inject: [ConfigService],
-      useFactory: (config: ConfigService) => {
-        const url = config.get<string>('redis.url') ?? 'redis://localhost:6379';
-        return new Redis(url);
-      },
+      useFactory: (provider: RedisProvider) => provider.client,
+      inject: [RedisProvider],
     },
     ClipsService,
   ],

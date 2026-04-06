@@ -38,11 +38,7 @@
       "plugin": "@nx/jest/plugin",
       "options": {
         "targetName": "test"
-      },
-      "exclude": [
-        "apps/kv-server-e2e/**/*",
-        "apps/scribbletune-midi-store-e2e/**/*"
-      ]
+      }
     }
   ]
 }

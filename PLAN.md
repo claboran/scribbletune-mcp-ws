@@ -1,7 +1,7 @@
 # Scribbletune MCP Server — Planning Document
 
-> Status: **Draft v3 — awaiting final review**
-> Date: 2026-04-05
+> Status: **Draft v4 — updated 2026-04-06**
+> Date: 2026-04-06
 
 ---
 
@@ -61,7 +61,11 @@ apps/
   scribbletune-midi-store/    # MIDI store REST service, port 3001
 ```
 
+> **Migration note:** The workspace currently contains `apps/kv-server` and `apps/kv-server-e2e` — these are superseded by `scribbletune-midi-store` and must be deleted before scaffolding begins.
+
 No shared libs for v1. Resource Markdown content lives inline in `scribbletune-mcp-server` — it is an integral part of the MCP server, not a reusable concern.
+
+No E2E apps — integration is validated manually with the MCP Inspector and direct HTTP calls (`curl`/Postman) against the running services.
 
 ---
 
@@ -308,7 +312,42 @@ apps/scribbletune-midi-store/src/
 
 ---
 
-## 9. ScribbletunService — Buffer extraction
+## 9. Swagger UI — `scribbletune-midi-store`
+
+`scribbletune-midi-store` exposes a Swagger UI at `GET /api` (mounted in `main.ts`).
+
+### Setup
+
+```ts
+// main.ts
+import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+import { patchNestJsSwagger } from 'nestjs-zod';
+
+patchNestJsSwagger(); // makes nestjs-zod schemas appear in Swagger
+
+const config = new DocumentBuilder()
+  .setTitle('Scribbletune MIDI Store')
+  .setDescription('Store and retrieve MIDI clips via Valkey')
+  .setVersion('1.0')
+  .build();
+
+const document = SwaggerModule.createDocument(app, config);
+SwaggerModule.setup('api', app, document);
+```
+
+The `patchNestJsSwagger()` call is required because DTOs are Zod-based (nestjs-zod), not class-based — without it, Swagger would see no schema properties.
+
+### Additional dependencies
+
+| Package | Purpose |
+|---------|---------|
+| `@nestjs/swagger` | Swagger/OpenAPI integration |
+
+> Swagger is **not** added to `scribbletune-mcp-server` — that app's surface area is the MCP protocol, not a REST API.
+
+---
+
+## 10. ScribbletunService — MIDI Buffer Extraction
 
 ```ts
 import { clip, midi } from 'scribbletune';
@@ -324,7 +363,7 @@ No fork of scribbletune required. This is documented behaviour in v5.5.4 (`midi.
 
 ---
 
-## 10. Local Dev Setup
+## 11. Local Dev Setup
 
 `docker-compose.yml` at workspace root:
 
@@ -349,7 +388,7 @@ npm exec nx run scribbletune-mcp-server:inspect
 
 ---
 
-## 11. Decisions Locked
+## 12. Decisions Locked
 
 | Topic | Decision |
 |-------|----------|
@@ -362,13 +401,16 @@ npm exec nx run scribbletune-mcp-server:inspect
 | `POST /clips` format | `multipart/form-data` |
 | Download URL | `PUBLIC_URL` env var on midi-store |
 | DTO style | `nestjs-zod` — no class-validator/class-transformer |
+| Swagger UI | `scribbletune-midi-store` only, at `/api`; `patchNestJsSwagger()` required |
+| Local store | Valkey 8 (Redis-compatible) via docker-compose — not Redis |
+| E2E apps | None — validated manually with MCP Inspector + curl |
 | Inspector | `nx` target on mcp-server project |
 | TTL | 3600s default, env-configurable |
 | Auth | Not in scope for v1 |
 
 ---
 
-## 12. Work to Do on Resource Content
+## 13. Work to Do on Resource Content
 
 The Markdown files under `content/` need to be carefully authored. Notes:
 
@@ -379,7 +421,7 @@ The Markdown files under `content/` need to be carefully authored. Notes:
 
 ---
 
-## 13. Out of Scope (v1)
+## 14. Out of Scope (v1)
 
 - Authentication / authorization
 - STDIO and SSE transports
@@ -387,3 +429,5 @@ The Markdown files under `content/` need to be carefully authored. Notes:
 - Agent / LLM integration (external concern)
 - S3 / pre-signed URL storage
 - Playback / audio rendering
+- E2E test apps (`*-e2e`)
+- Swagger on `scribbletune-mcp-server`

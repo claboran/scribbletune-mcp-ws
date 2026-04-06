@@ -36,6 +36,24 @@
         "${workspaceFolder}/apps/scribbletune-mcp-server/dist/**/*.(m|c|)js",
         "!**/node_modules/**"
       ]
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Debug scribbletune-midi-store with Nx",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["nx", "serve", "scribbletune-midi-store"],
+      "env": {
+        "NODE_OPTIONS": "--inspect=9232"
+      },
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "skipFiles": ["<node_internals>/**"],
+      "sourceMaps": true,
+      "outFiles": [
+        "${workspaceFolder}/apps/scribbletune-midi-store/dist/**/*.(m|c|)js",
+        "!**/node_modules/**"
+      ]
     }
   ]
 }

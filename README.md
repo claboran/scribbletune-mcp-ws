@@ -29,7 +29,7 @@ No coding required on your end. The agent handles the translation from musical i
 - **`generate-clip` tool** — generate a MIDI clip from a musical description (riff, chord progression, or arpeggio)
 - **`get-progression` tool** — resolve scale degrees to chord names before generating a clip
 - **7 MCP resources** — Scribbletune concept documentation as Markdown so the agent understands notes, patterns, scales, chords, progressions, and genre-specific guidance out of the box
-- **MIDI store service** *(coming soon)* — dedicated service backed by Redis/Valkey for storing and serving MIDI files
+- **MIDI store service** — dedicated NestJS service backed by [Valkey](https://valkey.io/) for storing and serving MIDI files with Swagger UI
 - Built with [NestJS](https://nestjs.com/), [@rekog/mcp-nest](https://github.com/rekog-labs/MCP-Nest), and [Nx](https://nx.dev/)
 
 ---
@@ -45,7 +45,7 @@ scribbletune-mcp-server   :3000
         │
         │  POST /clips
         ▼
-scribbletune-midi-store   :3001  ← coming soon
+scribbletune-midi-store   :3001
         │
         ▼
    Redis / Valkey
@@ -71,15 +71,23 @@ cd scribbletune-mcp-ws
 npm install
 ```
 
-### Run the dev server
+### Start the full local stack
 
 ```bash
-npm run mcp:dev
+npm run valkey:up   # start Valkey in Docker
+npm run dev         # start both apps in parallel
 ```
 
-The server starts on `http://localhost:3000/mcp`.
+- MCP server: `http://localhost:3000/mcp`
+- MIDI store: `http://localhost:3001`
+- MIDI store Swagger UI: `http://localhost:3001/api`
 
-> In development the MIDI store is mocked — `generate-clip` generates real MIDI bytes but does not persist them. A `[MOCK]` warning is logged on each call so you know exactly what's happening.
+To run apps individually:
+
+```bash
+npm run mcp:dev     # MCP server only
+npm run store:dev   # MIDI store only
+```
 
 ### Inspect with MCP Inspector
 
@@ -97,7 +105,7 @@ This launches the [@modelcontextprotocol/inspector](https://github.com/modelcont
 4. Use the **Resources** tab to read the Scribbletune concept docs
 5. Use the **Tools** tab to call `generate-clip` or `get-progression` interactively
 
-![MCP Inspector showing generate-clip and get-progression tools connected to the local server](./doc-iamges/using-mcp-inspector.png)
+![MCP Inspector showing generate-clip and get-progression tools connected to the local server](doc-images/using-mcp-inspector.png)
 
 ### Build
 
@@ -161,22 +169,82 @@ The agent reads these before making tool calls to avoid hallucinating invalid pa
 
 ---
 
+## MIDI store client — OpenAPI code generation
+
+The `scribbletune-midi-store` exposes a full OpenAPI 3 spec via its Swagger UI (served at `/api`). The `scribbletune-mcp-server` consumes this spec through a **generated TypeScript client** rather than a hand-written HTTP wrapper.
+
+### How it works
+
+1. The MIDI store serves its spec as JSON and YAML:
+   - `GET http://localhost:3001/api-json`
+   - `GET http://localhost:3001/api-yaml`
+
+2. The spec is committed to `apps/scribbletune-mcp-server/open-api/scribbletune-open-api.yml`
+
+3. The [OpenAPI Generator](https://openapi-generator.tech/) CLI produces a `typescript-fetch` client into `apps/scribbletune-mcp-server/src/midi-store-client/`
+
+4. The `MidiStoreClient` in the MCP server imports the generated `ClipsApi` class instead of making raw `axios` / `form-data` calls
+
+### Prerequisites
+
+- Java 11+ (required by openapi-generator)
+- The generator JAR at `open-api-generator-cli/openapi-generator-cli.jar` — download from the [OpenAPI Generator releases](https://github.com/OpenAPITools/openapi-generator/releases):
+
+```bash
+mkdir -p open-api-generator-cli
+curl -L https://repo1.maven.org/maven2/org/openapitools/openapi-generator-cli/7.19.0/openapi-generator-cli-7.19.0.jar \
+     -o open-api-generator-cli/openapi-generator-cli.jar
+```
+
+### Regenerate the client
+
+With the MIDI store running (`npm run store:dev`), export the current spec, then regenerate:
+
+```bash
+# 1. Export the live spec
+curl http://localhost:3001/api-yaml -o apps/scribbletune-mcp-server/open-api/scribbletune-open-api.yml
+
+# 2. Regenerate the TypeScript fetch client
+npm run store:generate:client
+```
+
+The generated files land in `apps/scribbletune-mcp-server/src/midi-store-client/` and are committed alongside the spec. Re-run these two steps whenever the MIDI store API changes.
+
+### Generated client location
+
+```
+apps/scribbletune-mcp-server/
+├── open-api/
+│   └── scribbletune-open-api.yml     # committed spec snapshot
+└── src/
+    └── midi-store-client/            # generated — do not edit by hand
+        ├── apis/
+        │   └── ClipsApi.ts
+        ├── models/
+        │   └── SaveClipResponseDto.ts
+        └── ...
+```
+
+---
+
 ## Project structure
 
 This is an [Nx](https://nx.dev/) monorepo.
 
 ```
 apps/
-  scribbletune-mcp-server/   # This MCP server (operational)
-  scribbletune-midi-store/   # MIDI storage service (coming soon)
+  scribbletune-mcp-server/   # MCP server — tools, resources, Scribbletune integration
+  scribbletune-midi-store/   # MIDI store REST service — Valkey-backed, Swagger UI at /api
+docker-compose.yml           # Valkey 8 for local development
 ```
 
 ---
 
 ## Roadmap
 
-- [ ] `scribbletune-midi-store` — Redis/Valkey-backed MIDI storage with HTTP download endpoint
-- [ ] Docker Compose setup for full local stack
+- [x] `scribbletune-midi-store` — Valkey-backed MIDI storage with HTTP download endpoint and Swagger UI
+- [x] Docker Compose setup for full local stack
+- [x] Wire generated OpenAPI client into `scribbletune-mcp-server` (replace handcrafted `MidiStoreClient`)
 - [ ] Multi-clip session tool — generate bass, chords, and melody in a single call
 - [ ] Example agent system prompts and Claude Desktop configuration
 

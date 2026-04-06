@@ -1,0 +1,87 @@
+openapi: 3.0.0
+paths:
+  /clips:
+    post:
+      operationId: ClipsController_save
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - file
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: MIDI binary file
+      responses:
+        '201':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SaveClipResponseDto'
+      summary: Store a MIDI clip
+      tags:
+        - clips
+  /clips/{id}:
+    get:
+      operationId: ClipsController_fetch
+      parameters:
+        - name: id
+          required: true
+          in: path
+          description: Clip UUID returned from POST /clips
+          schema:
+            type: string
+      responses:
+        '200':
+          description: MIDI binary stream
+      summary: Download a MIDI clip
+      tags:
+        - clips
+    delete:
+      operationId: ClipsController_delete
+      parameters:
+        - name: id
+          required: true
+          in: path
+          description: Clip UUID returned from POST /clips
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Deleted
+      summary: Delete a MIDI clip
+      tags:
+        - clips
+info:
+  title: Scribbletune MIDI Store
+  description: Store and retrieve MIDI clips via Valkey
+  version: '1.0'
+  contact: {}
+tags: []
+servers: []
+components:
+  schemas:
+    SaveClipResponseDto:
+      type: object
+      properties:
+        key:
+          type: string
+          description: Unique clip key, e.g. clips:<uuid>
+        downloadUrl:
+          type: string
+          description: Full URL to download the MIDI file
+        ttlSeconds:
+          type: integer
+          minimum: -9007199254740991
+          maximum: 9007199254740991
+          description: Seconds until the clip expires
+      required:
+        - key
+        - downloadUrl
+        - ttlSeconds

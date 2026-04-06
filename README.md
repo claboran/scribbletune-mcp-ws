@@ -244,7 +244,7 @@ docker-compose.yml           # Valkey 8 for local development
 
 - [x] `scribbletune-midi-store` — Valkey-backed MIDI storage with HTTP download endpoint and Swagger UI
 - [x] Docker Compose setup for full local stack
-- [ ] Wire generated OpenAPI client into `scribbletune-mcp-server` (replace handcrafted `MidiStoreClient`)
+- [x] Wire generated OpenAPI client into `scribbletune-mcp-server` (replace handcrafted `MidiStoreClient`)
 - [ ] Multi-clip session tool — generate bass, chords, and melody in a single call
 - [ ] Example agent system prompts and Claude Desktop configuration
 

@@ -192,7 +192,7 @@ The `scribbletune-midi-store` exposes a full OpenAPI 3 spec via its Swagger UI (
 
 ```bash
 mkdir -p open-api-generator-cli
-curl -L https://repo1.maven.org/maven2/org/openapitools/openapi-generator-cli/7.12.0/openapi-generator-cli-7.12.0.jar \
+curl -L https://repo1.maven.org/maven2/org/openapitools/openapi-generator-cli/7.19.0/openapi-generator-cli-7.19.0.jar \
      -o open-api-generator-cli/openapi-generator-cli.jar
 ```
 

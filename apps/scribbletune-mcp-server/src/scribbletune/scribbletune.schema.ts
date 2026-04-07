@@ -50,14 +50,39 @@ export const ClipSchema = z
         'Do NOT pass raw chord names ("CM FM GM") — they are not accepted here.',
       ),
     bpm: z.number().int().min(20).max(300).describe('Tempo in BPM'),
-    amp: z.number().min(0).max(127).optional().describe('Max velocity 0–127'),
+    amp: z
+      .number()
+      .min(0)
+      .max(127)
+      .optional()
+      .describe(
+        'Peak MIDI velocity (0–127). This is the CEILING of the sizzle envelope, not a volume multiplier. ' +
+        'Typical useful range: 70–100. Values below 20 will produce near-silent or inaudible output. ' +
+        'Default is 100 when omitted.',
+      ),
     sizzle: z
       .enum(['sin', 'cos', 'rampUp', 'rampDown'])
       .optional()
-      .describe('Velocity envelope shape over the pattern'),
-    sizzleReps: z.number().int().positive().optional(),
-    accent: z.string().optional().describe('Accent pattern, e.g. "x--x"'),
-    accentLow: z.number().int().min(0).max(127).optional(),
+      .describe(
+        'Velocity envelope shape applied across all pattern steps. ' +
+        '"sin" — rises from near-0 to amp then back to near-0 (first and last notes nearly silent). ' +
+        '"cos" — starts at amp, dips to near-0 at midpoint, returns to amp. ' +
+        '"rampUp" — builds steadily from near-0 to amp (good for energy build-ups). ' +
+        '"rampDown" — fades from amp to near-0. ' +
+        'accentLow has NO effect when sizzle is active — it only works with the accent pattern.',
+      ),
+    sizzleReps: z.number().int().positive().optional().describe('How many times the sizzle envelope repeats across the pattern. Default 1.'),
+    accent: z.string().optional().describe('Accent pattern, e.g. "x--x" — marks strong beats with x. Works together with accentLow.'),
+    accentLow: z
+      .number()
+      .int()
+      .min(0)
+      .max(127)
+      .optional()
+      .describe(
+        'Velocity for non-accented steps when using the accent pattern (0–127). ' +
+        'Has NO effect when sizzle is active — ignored unless accent is also provided.',
+      ),
     arpCount: z
       .number()
       .int()
@@ -76,6 +101,16 @@ export const ClipSchema = z
         code: z.ZodIssueCode.custom,
         message: 'Either "notes" or both "root" and "mode" must be provided.',
         path: ['notes'],
+      });
+    }
+
+    if (data.amp !== undefined && data.amp < 20) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message:
+          `amp=${data.amp} is not a 0-1 multiplier — it is a MIDI velocity in the range 0-127. ` +
+          `Values below 20 will produce a near-silent or completely inaudible clip. Use amp between 70 and 100 for normal playback.`,
+        path: ['amp'],
       });
     }
   });

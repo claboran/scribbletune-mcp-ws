@@ -135,13 +135,13 @@ The real value of the MCP server is the back-and-forth between you and the agent
   "pattern": "x--x-x--x---x--xx-x-xx-x-xx-x-xx",
   "subdiv": "16n",
   "bpm": 131,
-  "sizzle": "sin",
-  "amp": 90,
-  "accentLow": 45
+  "amp": 90
 }
 ```
 
 > Download your clip: `http://localhost:3001/clips/8c7d8d4e-…`
+>
+> A rendered example of this exact clip is available at [midi/clip.mid](midi/clip.mid).
 
 ---
 
@@ -299,6 +299,84 @@ docker-compose.yml           # Valkey 8 for local development
 
 ---
 
+## Testing
+
+The test suite is split by concern: unit-style tests for the MIDI generation logic, and
+container-backed integration tests for the storage layer.
+
+### Running the tests
+
+```bash
+npm run mcp:test    # ScribbletunService — MIDI generation (Jest, no Docker needed)
+npm run store:test  # ClipsService + ClipsController — Valkey integration (requires Docker)
+```
+
+### MCP server — MIDI generation (`mcp:test`)
+
+Tests live in `apps/scribbletune-mcp-server/src/scribbletune/scribbletune.service.spec.ts`.
+
+`ScribbletunService` is instantiated directly — no NestJS bootstrap needed — and the
+generated MIDI buffers are parsed with [midi-file](https://github.com/nicktindall/midi-file)
+to make structural assertions on the binary output.
+
+**Musical scenarios covered:**
+
+| Scenario | What is verified |
+|----------|-----------------|
+| README Deep Tech bassline (`notes` override, 16n, sizzle:sin) | Pitches match the note string, correct BPM, velocities within `[1, amp]` range, hit count equals `x` steps in pattern |
+| G minor riff (scale-based `riff`) | All pitch classes belong to G natural minor, BPM encoding, hit count |
+| C major chord progression `I IV V I` | Multi-voice noteOn events (> chord count), pitch class C present, BPM |
+| Descending arpeggio `i v` in A minor | Buffer parseable, noteOn events produced, BPM |
+| Sub bass D#1 whole note | MIDI note number 27, sub-bass register confirmed (< 30) |
+| BPM → µs/beat encoding at 60 / 120 / 130 / 174 BPM | `microsecondsPerBeat` within ±1 µs of `60 000 000 / bpm` |
+| Error paths | Throws when `root`+`mode` missing, when `progression` absent for `chord` or `arp` |
+
+> **Why these tests matter:**
+> Writing the tests surfaced three real bugs in the original documentation and tool schema:
+> `getChordsByProgression` only accepts Roman numeral degrees (`"I IV V ii"`), not raw chord
+> names (`"CM FM GM"`); the pattern's `x`-count determines how many chords are hit, not
+> the length of the progression array; and the `get-progression` tool returns chord names
+> for human reference — the **degrees** are what flows into `generate-clip`.
+> All three are now corrected in the schema, MCP resources, and this README.
+
+### MIDI store — Valkey integration (`store:test`)
+
+Tests live in `apps/scribbletune-midi-store/src/clips/clips.integration.spec.ts`.
+
+A real [Valkey](https://valkey.io/) instance is started via
+[Testcontainers](https://testcontainers.com/) (`valkey/valkey:8-alpine`) before the suite
+runs and torn down afterwards. Docker must be available on the host.
+
+The suite is split into two describe blocks that share the same container:
+
+**`ClipsService` (6 tests) — storage logic:**
+ioredis is injected directly into the service, bypassing the NestJS module system for speed.
+
+| Test | What is verified |
+|------|-----------------|
+| `save` | Returns a v4 UUID id and a `clips:<id>` key |
+| `fetchById` after `save` | Retrieved bytes are byte-for-byte identical to the original |
+| `fetchById` unknown id | Throws `NotFoundException` |
+| `deleteById` then `fetchById` | Throws `NotFoundException` after deletion |
+| Custom TTL | Key TTL in Valkey is within 2 s of the requested value |
+| Two independent clips | Both are retrievable without cross-contamination |
+
+**`ClipsController` HTTP (5 tests) — full HTTP stack:**
+NestJS testing module with the real `ClipsModule`, `REDIS_CLIENT` overridden with the
+shared test connection, [supertest](https://github.com/ladjs/supertest) for HTTP assertions.
+
+| Test | What is verified |
+|------|-----------------|
+| `POST /clips` | 201 response, `key` matches `clips:*`, `downloadUrl` contains `/clips/`, `ttlSeconds > 0` |
+| `GET /clips/:id` | 200, `Content-Type: audio/midi`, body bytes match the uploaded buffer |
+| `GET /clips/:unknown` | 404 |
+| `DELETE /clips/:id` → `GET` | 204 on delete, then 404 on subsequent fetch |
+| `Content-Disposition` | `attachment; filename="clip.mid"` present on download |
+
+Each test runs against a clean store — `redis.flushdb()` is called in `afterEach`.
+
+---
+
 ## Roadmap
 
 - [x] `scribbletune-midi-store` — Valkey-backed MIDI storage with HTTP download endpoint and Swagger UI
@@ -306,6 +384,7 @@ docker-compose.yml           # Valkey 8 for local development
 - [x] Wire generated OpenAPI client into `scribbletune-mcp-server` (replace handcrafted `MidiStoreClient`)
 - [ ] Multi-clip session tool — generate bass, chords, and melody in a single call
 - [ ] Example agent system prompts and Claude Desktop configuration
+- [ ] Ghost note support — allow intentionally low `amp` values (< 20) for ghost notes and subtle velocity layers, with an explicit `ghostNotes: true` flag to distinguish musical intent from accidental misconfiguration
 
 ---
 

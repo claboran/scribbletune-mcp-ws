@@ -1,4 +1,5 @@
 import { parseMidi, MidiEvent } from 'midi-file';
+import { ClipSchema } from './scribbletune.schema';
 import { ScribbletunService } from './scribbletune.service';
 import type { ClipParams } from './scribbletune.types';
 
@@ -297,6 +298,51 @@ describe('ScribbletunService', () => {
         bpm: 120,
       };
       expect(() => service.generateBuffer(params)).toThrow(/progression/i);
+    });
+  });
+
+  // ── 8. ClipSchema validation — amp guard ──────────────────────────────────
+  // The agent has consistently misread amp as a 0-1 multiplier and passed amp:1.
+  // These tests verify the Zod schema rejects the misconfiguration before the
+  // service is ever called.
+  describe('ClipSchema — amp validation guard', () => {
+    const base = { command: 'riff' as const, notes: 'C4', pattern: 'x', bpm: 120 };
+
+    it('rejects amp=1 with a clear message about MIDI velocity range', () => {
+      const result = ClipSchema.safeParse({ ...base, amp: 1 });
+      expect(result.success).toBe(false);
+      if (!result.success) {
+        const msg = result.error.issues[0].message;
+        expect(msg).toMatch(/not a 0-1 multiplier/i);
+        expect(msg).toMatch(/MIDI velocity/i);
+      }
+    });
+
+    it('rejects amp=1 with sizzle active', () => {
+      const result = ClipSchema.safeParse({ ...base, amp: 1, sizzle: 'rampUp' });
+      expect(result.success).toBe(false);
+    });
+
+    it('rejects any amp below 20', () => {
+      for (const amp of [0, 1, 5, 19]) {
+        const result = ClipSchema.safeParse({ ...base, amp });
+        expect(result.success).toBe(false);
+      }
+    });
+
+    it('accepts amp=20 (boundary)', () => {
+      const result = ClipSchema.safeParse({ ...base, amp: 20 });
+      expect(result.success).toBe(true);
+    });
+
+    it('accepts amp=90 (typical value)', () => {
+      const result = ClipSchema.safeParse({ ...base, amp: 90 });
+      expect(result.success).toBe(true);
+    });
+
+    it('accepts omitted amp (optional)', () => {
+      const result = ClipSchema.safeParse(base);
+      expect(result.success).toBe(true);
     });
   });
 });

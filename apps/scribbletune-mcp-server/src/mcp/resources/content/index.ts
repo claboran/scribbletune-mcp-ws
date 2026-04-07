@@ -35,11 +35,11 @@ and returns an array of note events used by \`midi()\` to write the file.
 | \`pattern\` | string | required | Rhythm pattern. See **Notes & Patterns** doc. |
 | \`subdiv\` | string | \`'4n'\` | Duration of each \`x\` step. |
 | \`shuffle\` | boolean | \`false\` | Randomises note order. |
-| \`sizzle\` | boolean \| string | — | Velocity envelope: \`true\`/\`'sin'\`, \`'cos'\`, \`'rampUp'\`, \`'rampDown'\` |
+| \`sizzle\` | boolean \| string | — | Velocity envelope: \`'sin'\`, \`'cos'\`, \`'rampUp'\`, \`'rampDown'\` |
 | \`sizzleReps\` | number | — | How many times the sizzle envelope repeats over the pattern. |
 | \`accent\` | string | — | Secondary pattern marking accented beats with \`x\` and non-accented with \`-\`. |
-| \`amp\` | number | \`100\` | Velocity for accented notes (0–127). |
-| \`accentLow\` | number | \`50\` | Velocity for non-accented notes (0–127). |
+| \`amp\` | number | \`100\` | **Peak** MIDI velocity (0–127). When sizzle is active this is the envelope ceiling. Use 70–100. |
+| \`accentLow\` | number | \`50\` | Velocity for non-accented steps. **Only applies with \`accent\` pattern — has no effect when \`sizzle\` is active.** |
 
 ## subdiv values
 
@@ -50,10 +50,19 @@ a whole bar is \`'1m'\`.
 
 ## sizzle shapes
 
-- \`'sin'\` — smooth rise and fall (sine wave) — natural, organic feel
-- \`'cos'\` — starts loud, dips, returns — inverted variation
-- \`'rampUp'\` — builds from quiet to loud — growing energy
-- \`'rampDown'\` — starts loud, fades — dying energy
+The sizzle envelope scales velocity between near-0 and \`amp\` across all pattern steps.
+\`amp\` is the **ceiling** of the envelope — always set it to a meaningful value (70–100)
+or the entire clip will be near-silent.
+
+| Shape | Velocity curve | Best for |
+|-------|---------------|----------|
+| \`'sin'\` | near-0 → amp → near-0 | Organic swell — **first and last notes nearly silent** |
+| \`'cos'\` | amp → near-0 → amp | Starts and ends loud, dips in the middle |
+| \`'rampUp'\` | near-0 → amp | Energy build — audible throughout, rises to peak |
+| \`'rampDown'\` | amp → near-0 | Fade out — starts loud, trails off |
+
+**Important:** \`accentLow\` does **not** floor the sizzle minimum. When \`sizzle\` is active,
+\`accentLow\` is ignored entirely — it only has effect when used together with an \`accent\` pattern.
 
 Use \`sizzleReps\` to repeat the envelope N times across the full pattern.
 `;

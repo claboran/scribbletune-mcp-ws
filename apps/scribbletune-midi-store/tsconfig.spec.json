@@ -3,12 +3,15 @@
   "compilerOptions": {
     "outDir": "../../dist/out-tsc",
     "module": "commonjs",
-    "types": ["node", "multer"],
+    "moduleResolution": "node",
+    "types": ["jest", "node", "multer"],
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
-    "target": "es2021",
-    "moduleResolution": "node"
+    "target": "es2021"
   },
-  "include": ["src/**/*.ts"],
-  "exclude": ["src/**/*.spec.ts", "src/**/*.test.ts"]
+  "include": [
+    "jest.config.cts",
+    "src/**/*.spec.ts",
+    "src/**/*.d.ts"
+  ]
 }

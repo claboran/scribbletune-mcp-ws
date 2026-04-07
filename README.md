@@ -115,6 +115,61 @@ npm run mcp:build
 
 ---
 
+## Example — multi-turn creative session
+
+The real value of the MCP server is the back-and-forth between you and the agent. Here's what a real session looks like, including the `notes` override for precise melodic control.
+
+---
+
+**You:** I want a Deep Tech top bassline, 2 bars, 1/16 notes, D#2, a bit of movement in the second bar going up a perfect fifth.
+
+**Agent:**
+> Perfect fifth from D#2 is A#2 (+7 semitones). I'll keep bar 1 sparse and anchored, then climb in bar 2. Using phrygian feel — the minor 2nd (E2/F2) adds that hypnotic tension typical of deep tech.
+>
+> *(calls `generate-clip`)*
+
+```json
+{
+  "command": "riff",
+  "notes": "D#2 D#2 F2 D#2 F2 D#2 D#2 F2 G2 G#2 A#2 A#2 A#2 A#2 G#2 A#2",
+  "pattern": "x--x-x--x---x--xx-x-xx-x-xx-x-xx",
+  "subdiv": "16n",
+  "bpm": 131,
+  "sizzle": "sin",
+  "amp": 90,
+  "accentLow": 45
+}
+```
+
+> Download your clip: `http://localhost:3001/clips/8c7d8d4e-…`
+
+---
+
+**You:** Nice. The second bar feels a bit crowded — space it out and make the climb slower.
+
+**Agent:**
+> I'll thin out bar 2 — fewer hits, longer gaps between the ascending notes, so the climb breathes more.
+>
+> *(calls `generate-clip` again with revised notes and pattern)*
+
+---
+
+**You:** Can you add a sub bass underneath? Same key, just D#1, whole notes.
+
+**Agent:**
+> That's a separate clip — one whole note per bar, sitting underneath.
+>
+> *(calls `generate-clip` with `root=D#1`, `mode=phrygian`, `pattern=x_`, `subdiv=1m`)*
+> Download your sub: `http://localhost:3001/clips/…`
+
+---
+
+Import both `.mid` files into separate DAW tracks, layer them — done.
+
+> **Note on the `notes` override:** Whenever you describe a melody with specific pitches ("go up a fifth", "land on the major 7th"), the agent uses the `notes` parameter directly rather than deriving from a scale. This gives it precise per-step melodic control that scale-based generation can't provide.
+
+---
+
 ## MCP tools
 
 ### `generate-clip`
@@ -128,7 +183,7 @@ Generates a MIDI clip and returns a download key and URL.
 | `mode` | string | Scale name, e.g. `"minor"`, `"dorian"`, `"phrygian"` |
 | `pattern` | string | Rhythm pattern: `x`=hit `-`=rest `_`=sustain `R`=random |
 | `subdiv` | string | Step duration: `"16n"` `"8n"` `"4n"` `"1m"` … |
-| `progression` | string | Chord names or degrees — required for `chord` / `arp` |
+| `progression` | string | Roman numeral scale degrees, e.g. `"I IV V ii"` or `"i VI III VII"` — required for `chord` / `arp`. Use `get-progression` to discover degrees. |
 | `bpm` | number | Tempo in BPM |
 | `sizzle` | string | Velocity envelope: `sin` `cos` `rampUp` `rampDown` |
 | `amp` | number | Max velocity 0–127 |
@@ -138,9 +193,13 @@ Generates a MIDI clip and returns a download key and URL.
 
 Returns `{ key, downloadUrl, ttlSeconds, meta }`.
 
+> **Pattern vs chord count:** each `x` in the pattern plays the *next* chord in sequence.
+> With 4 chords and `pattern: "x---"` only the first chord sounds.
+> Use `"xxxx"` (or a pattern with as many `x` steps as chords) to hit every chord.
+
 ### `get-progression`
 
-Resolves scale degrees to chord names. Useful before `generate-clip` when working with `chord` or `arp` commands. Not needed for basslines or melodic riffs.
+Resolves scale degrees to chord names for human reference. Call this before `generate-clip` when working with `chord` or `arp` commands — then pass the returned **degrees** (not the chord names) as the `progression` parameter. Not needed for basslines or melodic riffs.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|

@@ -1,7 +1,8 @@
 export type ClipParams = {
   command: 'riff' | 'chord' | 'arp';
-  root: string;
-  mode: string;
+  notes?: string;           // raw override — bypasses root+mode resolution
+  root?: string;            // required when notes is absent
+  mode?: string;            // required when notes is absent
   pattern: string;
   subdiv?: string;
   progression?: string;
@@ -11,7 +12,6 @@ export type ClipParams = {
   sizzleReps?: number;
   accent?: string;
   accentLow?: number;
-  // arp-only
   arpCount?: number;
   arpOrder?: string;
 };

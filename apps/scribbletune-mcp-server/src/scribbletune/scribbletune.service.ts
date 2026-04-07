@@ -47,7 +47,15 @@ export class ScribbletunService {
   }
 
   private resolveNotes(params: ClipParams): string | string[] {
+    if (params.notes) {
+      return params.notes.trim().split(/\s+/);
+    }
+
     const { command, root, mode, progression: prog } = params;
+
+    if (!root || !mode) {
+      throw new Error('"root" and "mode" are required when "notes" is not provided.');
+    }
 
     if (command === 'riff') {
       return scale(`${root} ${mode}`);

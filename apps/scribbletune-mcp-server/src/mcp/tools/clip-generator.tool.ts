@@ -24,7 +24,7 @@ export class ClipGeneratorTool {
   })
   async generate(params: z.infer<typeof ClipSchema>) {
     this.#logger.log(
-      `generate-clip: command=${params.command} root=${params.root} mode=${params.mode} bpm=${params.bpm}`,
+      `generate-clip: command=${params.command} root=${params.root ?? '(custom notes)'} mode=${params.mode ?? '(custom notes)'} bpm=${params.bpm}`,
     );
 
     const { buffer, eventCount } = this.scribbletun.generateBuffer(params);

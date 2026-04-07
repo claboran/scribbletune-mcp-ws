@@ -13,8 +13,9 @@ rhythm and articulation. Clips are generated with one of three commands:
 ## Typical workflow
 
 1. Choose \`command\`, \`root\`, \`mode\` (see **Scales** doc)
-2. For \`chord\` or \`arp\`: optionally call the \`get-progression\` tool first to resolve
-   scale degrees (e.g. "I IV V") into actual chord names
+2. For \`chord\` or \`arp\`: optionally call the \`get-progression\` tool first to discover
+   human-readable chord names for a set of scale degrees (e.g. "I IV V ii"),
+   then pass those **degrees** as the \`progression\` parameter to \`generate-clip\`
 3. Write a \`pattern\` string (see **Notes & Patterns** doc)
 4. Pick a \`subdiv\` and \`bpm\`
 5. Optionally add articulation (\`sizzle\`, \`accent\`, \`amp\`)
@@ -221,11 +222,20 @@ Format: \`'{Root}{Octave} {ChordType}'\`
 
 Full list: run \`chords()\` from the scribbletune package for all 100+ types.
 
-## Chord notation in clip()
+## Chord notation in generate-clip
 
 When using \`command=chord\` or \`command=arp\`, the \`progression\` parameter
-accepts either chord names directly (\`'CM FM GM'\`) or scale-degree notation
-resolved via the \`get-progression\` tool.
+**requires Roman numeral scale degrees** — e.g. \`"I IV V ii"\` (major) or
+\`"i VI III VII"\` (minor). Raw chord names (\`"CM FM GM"\`) are **not** accepted.
+
+Use the \`get-progression\` tool to discover which degrees are available for a
+given root and mode, then copy the returned \`degrees\` value into \`progression\`.
+
+### Pattern vs chord count
+
+Each \`x\` step in the pattern plays the **next chord** in the progression in sequence.
+With 4 chords and pattern \`"x---"\` only the first chord sounds (1 hit in 4 steps).
+Use \`"xxxx"\` to hit all 4 chords, or repeat the pattern accordingly.
 `;
 
 export const DOC_PROGRESSION = `# Scribbletune — Progressions
@@ -241,12 +251,16 @@ For \`command=riff\` (bassline, melody) — skip \`get-progression\` entirely.
 
 ## getChordsByProgression()
 
-Maps scale-degree strings to actual chord names for a given root + mode:
+Maps Roman numeral scale-degree strings to human-readable chord names for a given root + mode.
+This is what the \`get-progression\` tool uses internally.
 
 \`\`\`ts
 getChordsByProgression('C4 major', 'I IV V ii')
-// → 'CM FM GM Dm'  (pass this as progression in generate-clip)
+// → 'CM_4 FM_4 GM_4 Dm_4'  (for reference only — chord names with octave suffix)
 \`\`\`
+
+**Important:** pass the **degrees** (\`"I IV V ii"\`) as the \`progression\` parameter
+to \`generate-clip\`, not the chord name output. The tool resolves degrees internally.
 
 ## Chord degrees by mode
 
